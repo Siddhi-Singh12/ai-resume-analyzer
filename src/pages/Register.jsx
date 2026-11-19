@@ -1,12 +1,14 @@
-import { useState } from 'react'
+import { useState, useContext } from 'react'
 
 import { Link, useNavigate } from 'react-router-dom'
 
 import { registerUser } from '../services/authService'
+import { AuthContext } from '../context/authContextObject'
 
 const Register = () => {
 
     const navigate = useNavigate()
+    const { login } = useContext(AuthContext)
 
     const [formData, setFormData] = useState({
 
@@ -26,30 +28,27 @@ const Register = () => {
     }
 
     const handleSubmit = async (e) => {
-
         e.preventDefault()
 
         try {
+            const data = await registerUser(formData)
 
-            const data =
-                await registerUser(formData)
+            if (data?.token) {
+                localStorage.setItem('token', data.token)
+            }
+            localStorage.setItem('user', JSON.stringify(data))
+            localStorage.setItem('userInfo', JSON.stringify(data))
 
-            localStorage.setItem(
+            login(data)
 
-                'userInfo',
-
-                JSON.stringify(data)
-            )
-
-            navigate('/dashboard')
+            navigate('/analyzer')
 
         } catch (error) {
-
-            console.log(error)
-
-            alert('Registration Failed')
+            console.error('Registration error:', error)
+            alert(error?.response?.data?.message || 'Registration Failed')
         }
     }
+
 
     return (
 

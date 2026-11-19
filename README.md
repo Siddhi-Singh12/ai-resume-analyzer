@@ -310,115 +310,85 @@ ollama serve
 
 ---
 
-# ▶️ Start FastAPI AI Service
+# ▶️ Quick Start Guide
 
+### 1. Start MongoDB
+Ensure MongoDB is running on default port `27017`:
 ```bash
-uvicorn app:app --reload
+brew services start mongodb-community
+# or run directly:
+mongod --dbpath /path/to/data/db
 ```
 
-AI Service runs on:
-
-```text
-http://127.0.0.1:8000
-```
-
-Swagger API Docs:
-
-```text
-http://127.0.0.1:8000/docs
-```
-
----
-
-# 🧪 Machine Learning Pipeline
-
-# Merge Datasets
-
+### 2. Start FastAPI AI Service (Port 8000)
 ```bash
-python -m training.merge_datasets
+cd ai-service
+# activate virtual environment
+source venv/bin/activate
+uvicorn app:app --host 127.0.0.1 --port 8000 --reload
 ```
+Swagger API Documentation: `http://127.0.0.1:8000/docs`
 
----
-
-# Train Role Prediction Model
-
+### 3. Start Express Backend (Port 5000)
 ```bash
-python -m training.train_role_model
+cd backend
+npm install
+npm run dev
 ```
 
----
-
-# Train ATS Prediction Model
-
+### 4. Start React Frontend (Port 5173)
 ```bash
-python -m training.train_ats_model
+# from root project directory
+npm install
+npm run dev
 ```
+Open `http://localhost:5173` in your browser.
 
----
-
-# Evaluate Models
-
+### 5. (Optional) Run Ollama Phi-3 for Conversational AI
 ```bash
-python -m training.evaluate_models
+ollama serve
+ollama pull phi3
 ```
+*Note: The platform features an intelligent, zero-latency rule-based NLP fallback engine for instant resume analysis, and connects to Ollama Phi-3 when available.*
 
 ---
 
-# 📡 API Endpoints
+# 🖥️ Interactive Dashboard Panels
 
-# Authentication APIs
-
-## Register User
-
-```http
-POST /api/auth/register
-```
-
-## Login User
-
-```http
-POST /api/auth/login
-```
+1. **Executive Overview**: Explainable 0-100 ATS match, Resume Quality score, primary predicted role with calibrated confidence, and high-level gap overview.
+2. **Job Recommendations**: Semantic matching against 1,068 verified job postings using Sentence Transformers, displaying fit reasons and job-ready skills.
+3. **Resume Improvements**: Bullet-point rewrite generator replacing weak verbs with strong metrics and ATS keywords, plus 4 distinct summary variations with one-click copying.
+4. **Section & Project Audit**: Complete audit of 8 essential resume sections and deep project analysis (architecture, tech stack, and quantified metrics).
+5. **Interview Preparation**: Dynamic technical, project, and behavioral interview questions with STAR answers, filterable by difficulty (Easy, Medium, Hard) and category.
+6. **Career Roadmap & Learning Plan**: 6-phase progressive career milestones with real dataset market demand percentages and actionable exercises.
+7. **Multi-Job Description Comparator**: Side-by-side comparison of candidate resumes against multiple job postings with gap diagnostics.
+8. **Analysis History & Progress Trends**: MongoDB persistent analysis logs with score progression tracking and instant state reload.
+9. **Context-Aware Floating Chatbot**: AI career mentor maintaining live candidate resume context.
 
 ---
 
-# Resume APIs
+# 📡 Full API Endpoints
 
-## Upload Resume
+### Authentication APIs
+- `POST /api/auth/register` - User registration with password hashing
+- `POST /api/auth/login` - User login with JWT generation
+- `GET /api/auth/profile` - Authenticated user profile
 
-```http
-POST /api/resume/upload
-```
+### Resume Analysis APIs
+- `POST /api/analyze/resume` - Multi-part PDF upload with end-to-end ML & NLP analysis
+- `GET /api/analyze/history` - MongoDB historical analyses for current user
+- `GET /api/analyze/:id` - Fetch single analysis record by ID
+- `POST /api/analyze/compare` - Compare single resume against multiple job descriptions
 
----
-
-# AI Prediction APIs
-
-## Predict ATS Score + Job Role
-
-```http
-POST /predict/resume
-```
-
----
-
-# AI Recommendation APIs
-
-## Recommend Jobs
-
-```http
-POST /recommend/jobs
-```
-
----
-
-# AI Chatbot APIs
-
-## Chat with Phi-3
-
-```http
-POST /chatbot/ask
-```
+### Modular AI APIs
+- `POST /api/roles/predict` - Multi-role prediction with supporting skills
+- `POST /api/skills/analyze` - Skill extraction and gap analysis
+- `POST /api/jobs/recommend` - Semantic job recommendations from dataset
+- `POST /api/interview/questions` - Role and difficulty-tailored interview prep
+- `POST /api/career/roadmap` - Target role career phase generator
+- `POST /api/career/learning-plan` - Dataset-backed market demand learning plan
+- `POST /api/resume/project-analyze` - Project architecture and metric extraction
+- `POST /api/chatbot/chat` - Context-aware AI career assistant
 
 ---
 
@@ -430,6 +400,7 @@ POST /chatbot/ask
 | Random Forest Regressor | ATS Score Prediction |
 | Sentence Transformers | Semantic Job Matching |
 | TF-IDF Vectorizer | Resume Text Processing |
+
 
 ---
 

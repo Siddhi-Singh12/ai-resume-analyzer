@@ -1,57 +1,36 @@
-import ollama
+from fastapi import APIRouter
+from pydantic import BaseModel
+from typing import Optional, Dict, Any
+from services.phi3_chatbot import generate_contextual_chat_reply
 
-# ================= GENERAL CHAT =================
+router = APIRouter(tags=["Chatbot"])
 
-def ask_phi3(prompt):
+class ChatRequest(BaseModel):
+    message: Optional[str] = ""
+    prompt: Optional[str] = ""
+    context: Optional[Dict[str, Any]] = None
 
-    response = ollama.chat(
+class FeedbackRequest(BaseModel):
+    resume_text: str
 
-        model="phi3",
+@router.post("/chatbot/chat")
+@router.post("/chat")
+@router.post("/ask")
+def chat_endpoint(data: ChatRequest):
+    user_prompt = data.prompt or data.message or ""
+    reply = generate_contextual_chat_reply(user_prompt, data.context)
+    return {
+        "response": reply,
+        "reply": reply
+    }
 
-        messages=[
-
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ]
+@router.post("/chatbot/feedback")
+@router.post("/feedback")
+def feedback_endpoint(data: FeedbackRequest):
+    reply = generate_contextual_chat_reply(
+        "Analyze this resume and provide improvements, missing skills, and interview tips.",
+        context={"resume_text": data.resume_text}
     )
-
-    return response["message"]["content"]
-
-# ================= RESUME FEEDBACK =================
-
-def generate_ai_feedback(resume_text):
-
-    prompt = f"""
-
-    You are an expert ATS recruiter and career coach.
-
-    Analyze this resume and provide:
-
-    1. ATS score improvement tips
-    2. Missing skills
-    3. Resume weaknesses
-    4. Interview preparation advice
-    5. Career suggestions
-    6. Better resume summary
-
-    Resume:
-
-    {resume_text}
-    """
-
-    response = ollama.chat(
-
-        model="phi3",
-
-        messages=[
-
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ]
-    )
-
-    return response["message"]["content"]
+    return {
+        "feedback": reply
+    }

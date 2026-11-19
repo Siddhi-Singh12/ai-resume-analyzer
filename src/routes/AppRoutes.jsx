@@ -5,34 +5,36 @@ import About from '../pages/About'
 import Contact from '../pages/Contact'
 import Analyzer from '../pages/Analyzer'
 import Dashboard from '../pages/Dashboard'
-
 import Login from '../pages/Login'
 import Register from '../pages/Register'
-
 import NotFound from '../pages/NotFound'
+import ProtectedRoute from '../components/ProtectedRoute'
 
 const AppRoutes = () => {
-
     return (
-
         <Routes>
-
             <Route path="/" element={<Home />} />
-
             <Route path="/about" element={<About />} />
-
             <Route path="/contact" element={<Contact />} />
-
-            <Route path="/analyzer" element={<Analyzer />} />
-
-            <Route path="/dashboard" element={<Dashboard />} />
-
+            <Route
+                path="/analyzer"
+                element={
+                    <ProtectedRoute>
+                        <Analyzer />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/dashboard"
+                element={
+                    <ProtectedRoute>
+                        <Dashboard />
+                    </ProtectedRoute>
+                }
+            />
             <Route path="/login" element={<Login />} />
-
             <Route path="/register" element={<Register />} />
-
             <Route path="*" element={<NotFound />} />
-
         </Routes>
     )
 }

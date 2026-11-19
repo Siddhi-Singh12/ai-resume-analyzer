@@ -1,29 +1,39 @@
-import pandas as pd
-from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.feature_extraction.text import TfidfVectorizer
+from typing import Dict, List, Any
+from services.job_matcher import match_jobs_detailed
+from services.skill_extractor import extract_skills
 
-jobs_df = pd.read_csv("datasets/job_dataset.csv")
+def recommend_jobs(resume_text: str, top_k: int = 5) -> List[Dict[str, Any]]:
+    """
+    Recommend jobs from verified dataset using semantic similarity.
+    """
+    return match_jobs_detailed(resume_text, top_k=top_k)
 
-jobs_df["combined"] = jobs_df.astype(str).agg(" ".join, axis=1)
+def recommend_skills(extracted_skills: List[str], recommended_jobs: List[Dict[str, Any]] = None) -> List[str]:
+    """
+    Recommend complementary skills based on job dataset matches and industry standards.
+    """
+    current_skills_lower = {str(s).strip().lower() for s in (extracted_skills or [])}
+    recommended = []
 
-vectorizer = TfidfVectorizer()
+    if recommended_jobs:
+        for job in recommended_jobs:
+            missing = job.get("missing_skills", [])
+            for s in missing:
+                if s.strip().lower() not in current_skills_lower and s not in recommended:
+                    recommended.append(s)
+                if len(recommended) >= 6:
+                    break
+            if len(recommended) >= 6:
+                break
 
-job_vectors = vectorizer.fit_transform(jobs_df["combined"])
+    fallback_standards = [
+        "Docker", "AWS", "Kubernetes", "CI/CD", "System Design",
+        "Microservices", "TypeScript", "Redis", "Kafka", "Git"
+    ]
+    for skill in fallback_standards:
+        if skill.lower() not in current_skills_lower and skill not in recommended:
+            recommended.append(skill)
+        if len(recommended) >= 6:
+            break
 
-def recommend_jobs(resume_text):
-
-    resume_vector = vectorizer.transform([resume_text])
-
-    similarity = cosine_similarity(resume_vector, job_vectors)
-
-    top_indexes = similarity[0].argsort()[-5:][::-1]
-
-    recommendations = []
-
-    for idx in top_indexes:
-
-        recommendations.append(
-            jobs_df.iloc[idx].to_dict()
-        )
-
-    return recommendations
+    return recommended[:6]

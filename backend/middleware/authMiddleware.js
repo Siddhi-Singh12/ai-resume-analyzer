@@ -2,54 +2,44 @@
 
 import jwt from 'jsonwebtoken'
 
-const protect = async (
-
-    req,
-    res,
-    next
-
-) => {
-
+const protect = async (req, res, next) => {
     let token
 
-    if (
+    const authHeader = req.headers.authorization
 
-        req.headers.authorization &&
-        req.headers.authorization.startsWith('Bearer')
-
-    ) {
-
+    if (authHeader && authHeader.startsWith('Bearer')) {
         try {
+            token = authHeader.split(' ')[1]
 
-            token =
-                req.headers.authorization
-                    .split(' ')[1]
+            if (!token || token === 'null' || token === 'undefined') {
+                return res.status(401).json({
+                    message: 'Not Authorized',
+                })
+            }
 
             const decoded = jwt.verify(
-
                 token,
-
-                process.env.JWT_SECRET
+                process.env.JWT_SECRET || 'super_secret_key'
             )
 
-            req.user = decoded
+            req.user = {
+                ...decoded,
+                id: decoded.id || decoded._id,
+                _id: decoded.id || decoded._id,
+            }
 
             next()
 
         } catch (error) {
+            console.error('JWT Auth Middleware Error:', error.message)
 
-            console.log(error)
-
-            res.status(401).json({
-
+            return res.status(401).json({
                 message: 'Not Authorized',
             })
         }
 
     } else {
-
-        res.status(401).json({
-
+        return res.status(401).json({
             message: 'No Token',
         })
     }

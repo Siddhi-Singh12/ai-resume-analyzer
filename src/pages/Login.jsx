@@ -29,32 +29,27 @@ const Login = () => {
     }
 
     const handleSubmit = async (e) => {
-
         e.preventDefault()
 
         try {
+            const data = await loginUser(formData)
 
-            const data =
-                await loginUser(formData)
+            if (data?.token) {
+                localStorage.setItem('token', data.token)
+            }
+            localStorage.setItem('user', JSON.stringify(data))
+            localStorage.setItem('userInfo', JSON.stringify(data))
 
             login(data)
-
-            localStorage.setItem(
-
-                'userInfo',
-
-                JSON.stringify(data)
-            )
 
             navigate('/dashboard')
 
         } catch (error) {
-
-            console.log(error)
-
-            alert('Invalid Credentials')
+            console.error('Login error:', error)
+            alert(error?.response?.data?.message || 'Invalid Credentials')
         }
     }
+
 
     return (
 

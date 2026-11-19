@@ -39,7 +39,8 @@ def recommend(data: ResumeRequest):
 
     # RECOMMEND SKILLS
     skills = recommend_skills(
-        extracted_skills
+        extracted_skills,
+        jobs
     )
 
     return {
